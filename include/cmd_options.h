@@ -32,6 +32,7 @@ private:
         {"checksum", ProgramOptions::COMMAND_TYPE::CHECKSUM},
     };
 
+    bool showHelp_ = false;
     std::string inputFile_;
     std::string outputFile_;
     std::string password_;
