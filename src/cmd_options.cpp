@@ -3,63 +3,61 @@
 
 namespace CryptoGuard {
 
-ProgramOptions::ProgramOptions() : desc_("Allowed options") {
-    // - Реализуйте конструктор, который настроит парсер командной строки с помощью boost::program_options для следующих
-    // опций:
-    // help — список доступных опций;
-    // command — команда encrypt, decrypt или checksum;
-    // input — путь до входного файла;
-    // output — путь до файла, в котором будет сохранён результат;
-    // password — пароль для шифрования и дешифрования.
-    // - Добавьте обработку перечисленных опций с соответствующими параметрами (например, входные и выходные
-    // данные для шифрования файла) и их проверку.
-    // - Реализуйте маппинг строковых команд на enum COMMAND_TYPE.
-    // - Добавьте вызов метода Parse(), который в случае ошибки будет выводить сообщение об ошибке, а при выборе help —
-    // список доступных опций.
-}
+ProgramOptions::ProgramOptions() : desc_("Allowed options") {}
 
 ProgramOptions::~ProgramOptions() = default;
 
 void ProgramOptions::Parse(int argc, char *argv[]) {
-    // desc_.add_options()("help,h", boost::program_options::value<bool>(&showHelp_)->implicit_value(true), "Show
-    // help"); desc_.add_options()("input,i", boost::program_options::value<std::string>(&inputFile_), "Input file");
-    // desc_.add_options()("output,o", boost::program_options::value<std::string>(&outputFile_), "Output file");
-    // desc_.add_options()("password,p", boost::program_options::value<std::string>(&password_), "Password");
-
     namespace po = boost::program_options;
     std::string command;
-    std::string input_file;
-    std::string output_file;
-    std::string password;
 
-    // Описание опций
-    po::options_description desc("Использование: программа [ОПЦИИ]");
-
-    desc.add_options()
-    ("help,h", "Показать справку")
-    ("command,c", po::value<std::string>(&command), 
-        "Команда: encrypt/decrypt/checksum")
-    ("input,i", po::value<std::string>(&input_file), 
-        "Входной файл")
-    ("output,o", po::value<std::string>(&output_file), 
-        "Выходной файл")
-    ("password,p", po::value<std::string>(&password), 
-        "Пароль");
+    if (desc_.options().empty()) {
+        desc_.add_options()("help,h", boost::program_options::value<bool>(&showHelp_)->implicit_value(true), "Showhelp"); 
+        desc_.add_options()("input,i", boost::program_options::value<std::string>(&inputFile_), "Input file");
+        desc_.add_options()("output,o", boost::program_options::value<std::string>(&outputFile_), "Output file");
+        desc_.add_options()("password,p", boost::program_options::value<std::string>(&password_), "Password");
+        desc_.add_options()("command,c", boost::program_options::value<std::string>(&command), "Command: encrypt, decrypt, checksum");
+    }
 
     po::variables_map vm;
 
     try {
-        po::store(po::parse_command_line(argc, argv, desc), vm);
+        po::store(po::parse_command_line(argc, argv, desc_), vm);
         po::notify(vm);
     } catch (const po::error &e) {
-        std::cerr << "Ошибка: " << e.what() << std::endl;
-        std::cerr << desc << std::endl;
+        std::cerr << "Error: " << e.what() << std::endl;
+        std::cerr << desc_ << std::endl;
+        throw;
     }
 
-    std::cout << "Команда: " << command << std::endl;
-    std::cout << "Input: " << input_file << std::endl;
-    std::cout << "Output: " << output_file << std::endl;
-    std::cout << "pass: " << password << std::endl;
+    if (showHelp_) {
+        std::cout << desc_ << std::endl;
+    } else { // command
+        if (!vm.count("command")) {
+            throw std::runtime_error("Command is required. Use --help for usage.");
+        }
+
+        auto it = commandMapping_.find(command);
+        if (it == commandMapping_.end()) {
+            throw std::invalid_argument("Unknown command: " + std::string(command));
+        }
+        
+        command_ = it->second;
+
+        if (!vm.count("input")) {
+            throw std::runtime_error("Input file is required for all commands.");
+        }
+
+        if (command_ == COMMAND_TYPE::ENCRYPT || command_ == COMMAND_TYPE::DECRYPT) {
+            if (!vm.count("output")) {
+                throw std::runtime_error("Output file is required for encrypt/decrypt.");
+            }
+
+            if (!vm.count("password")) {
+                throw std::runtime_error("Password is required for encrypt/decrypt.");
+            }
+        }
+    }
 }
 
 }  // namespace CryptoGuard
