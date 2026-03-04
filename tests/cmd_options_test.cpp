@@ -24,6 +24,9 @@ TEST(ProgramOptions, Test1) {
     std::unique_ptr<CryptoGuard::ProgramOptions> po = std::make_unique<CryptoGuard::ProgramOptions>();
     po->Parse(test_data.toArgc(), test_data.toArgv());
     EXPECT_EQ(po->GetCommand(), COMMAND_TYPE::ENCRYPT);
+    EXPECT_EQ(po->GetInputFile(), "input.txt");
+    EXPECT_EQ(po->GetOutputFile(), "encrypted.txt");
+    EXPECT_EQ(po->GetPassword(), "1234");
 }
 
 // test2: ./test_app -i encrypted.txt -o decrypted.txt -p 1234 --command decrypt
@@ -31,7 +34,10 @@ TEST(ProgramOptions, Test2) {
     TestData test_data{{"./test_app", "-i", "encrypted.txt", "-o", "decrypted.txt", "-p", "1234", "--command", "decrypt"}};
     std::unique_ptr<CryptoGuard::ProgramOptions> po = std::make_unique<CryptoGuard::ProgramOptions>();
     po->Parse(test_data.toArgc(), test_data.toArgv());
-    EXPECT_EQ(po->GetCommand(), COMMAND_TYPE::DECRYPT); 
+    EXPECT_EQ(po->GetCommand(), COMMAND_TYPE::DECRYPT);
+    EXPECT_EQ(po->GetInputFile(), "encrypted.txt");
+    EXPECT_EQ(po->GetOutputFile(), "decrypted.txt");
+    EXPECT_EQ(po->GetPassword(), "1234"); 
 }
 
 // test3: ./test_app -i input.txt --command checksum
@@ -39,7 +45,8 @@ TEST(ProgramOptions, Test3) {
     TestData test_data{{"./test_app", "-i", "input.txt","--command", "checksum"}};
     std::unique_ptr<CryptoGuard::ProgramOptions> po = std::make_unique<CryptoGuard::ProgramOptions>();
     po->Parse(test_data.toArgc(), test_data.toArgv());
-    EXPECT_EQ(po->GetCommand(), COMMAND_TYPE::CHECKSUM);  
+    EXPECT_EQ(po->GetCommand(), COMMAND_TYPE::CHECKSUM);
+    EXPECT_EQ(po->GetInputFile(), "input.txt");
 }
 
 // test4 no command: ./test_app -i decrypted.txt
