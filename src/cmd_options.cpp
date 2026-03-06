@@ -3,7 +3,7 @@
 
 namespace CryptoGuard {
 
-ProgramOptions::ProgramOptions() : desc_("Allowed options") {}
+ProgramOptions::ProgramOptions() : command_(COMMAND_TYPE::NOCOMMAND), showHelp_(false),  desc_("Allowed options") {}
 
 ProgramOptions::~ProgramOptions() = default;
 

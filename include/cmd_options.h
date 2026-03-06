@@ -15,6 +15,7 @@ public:
         ENCRYPT,
         DECRYPT,
         CHECKSUM,
+        NOCOMMAND
     };
 
     void Parse(int argc, char *argv[]);
@@ -32,7 +33,7 @@ private:
         {"checksum", ProgramOptions::COMMAND_TYPE::CHECKSUM},
     };
 
-    bool showHelp_ = false;
+    bool showHelp_;
     std::string inputFile_;
     std::string outputFile_;
     std::string password_;
